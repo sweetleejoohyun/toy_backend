@@ -1,0 +1,1 @@
+from toy_backend.routes import image, video

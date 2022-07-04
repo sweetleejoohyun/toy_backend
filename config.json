@@ -1,0 +1,17 @@
+{
+  "production": {
+    "logging": {
+      "level": "info",
+      "path": "log"
+    },
+    "output_basedir": "D:\\toy-output\\",
+    "use_gpu": true,
+    "target_entities" :  "['Person', 'Car']"
+  },
+  "testing": {
+    "logging": {
+      "level": "debug"
+    },
+    "use_gpu": false
+  }
+}
