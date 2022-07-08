@@ -1,5 +1,5 @@
 import os
-from flask import request, jsonify
+from flask import request, make_response
 from datetime import date
 import random
 
@@ -27,7 +27,7 @@ class VideoAPI(object):
         file = request.files['video']
         if not file.filename:
             raise UploadFilenameRequired('File name not given.')
-        if not file.filename.endswith(('.mp4', '.avi', '.av1')):
+        if not file.filename.endswith(tuple(config.video_format)):
             raise UploadVideoFileRequired('Check the video file format.')
 
         today = date.today().strftime('%Y%m%d')
@@ -46,7 +46,7 @@ class VideoAPI(object):
         # 객체 이미지 디렉토리 생성
         obj_detection_path = os.path.join(config.output_basedir, config.video, config.object_detection_dir_name, today)
         create_dir(obj_detection_path)
-        return jsonify({})
+        return make_response({'message': 'Video is uploaded successfully'}, 200)
 
 
 routes = [
