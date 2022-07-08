@@ -1,5 +1,5 @@
 import os
-from flask import request, jsonify
+from flask import request, make_response
 from datetime import date
 
 
@@ -27,7 +27,7 @@ class ImageAPI(object):
         file = request.files['image']
         if not file.filename:
             raise UploadFilenameRequired('File name not given.')
-        if not file.filename.endswith(('.jpg', '.jpeg', '.png')):
+        if not file.filename.endswith(tuple(config.image_format)):
             raise UploadImageFileRequired('Check the image file format.')
 
         today = date.today().strftime('%Y%m%d')
@@ -41,21 +41,14 @@ class ImageAPI(object):
             raise FailedToUploadFile('Failed to assign file name.')
 
         # 원본 이미지 저장
-        save_to_jpg(file, original_path)
+        save_to_jpg(file, original_path, file_name)
 
         # 객체 이미지 디렉토리 생성
         obj_detection_path = os.path.join(config.output_basedir, config.image, config.object_detection_dir_name, today)
         create_dir(obj_detection_path)
-        return jsonify({})
-
-
+        return make_response({'message': 'Image is uploaded successfully'}, 200)
 
 
 routes = [
     Route(uri='image/upload', view_func=ImageAPI.upload_image, methods=['POST']),
-    # Route(uri='video/<video_id>', view_func=Api.get_video),
-    # Route(uri='video/<video_id>/description', view_func=Api.update_video_description, methods=['PATCH']),
-    # Route(uri='video/<video_id>/groups', view_func=Api.get_objs_grouped),
-    # Route(uri='videos', view_func=Api.get_videos),
-    # Route(uri='videos', view_func=Api.delete_videos, methods=['DELETE'])
 ]
