@@ -8,7 +8,8 @@ from toy_backend.routes.route import Route
 from toy_backend.common.util import (
     create_dir,
     assign_file_name,
-    save_to_jpg
+    save_to_jpg,
+    get_image_info
 )
 from toy_backend.common.exception import (
     UploadFileRequired,
@@ -41,12 +42,12 @@ class ImageAPI(object):
             raise FailedToUploadFile('Failed to assign file name.')
 
         # 원본 이미지 저장
-        save_to_jpg(file, original_path, file_name)
+        path = save_to_jpg(file, original_path, file_name)
 
         # 객체 이미지 디렉토리 생성
         obj_detection_path = os.path.join(config.output_basedir, config.image, config.object_detection_dir_name, today)
         create_dir(obj_detection_path)
-        return make_response({'message': 'Image is uploaded successfully'}, 200)
+        return make_response({'path': path, 'info': get_image_info(path)}, 200)
 
 
 routes = [
