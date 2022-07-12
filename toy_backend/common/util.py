@@ -15,7 +15,7 @@ def is_file_exist(file_dir):
 
 
 def assign_file_name(original_path, extension):
-    file_name = str(random.randint(0, 3)) # 100000
+    file_name = str(random.randint(0, 100000))
     if is_file_exist(os.path.join(original_path, file_name + extension)):
         _, file_name = assign_file_name(original_path, extension)
     return original_path, file_name
@@ -27,6 +27,7 @@ def save_to_jpg(file, file_path, file_name):
     img = cv2.imdecode(np_img, cv2.IMREAD_UNCHANGED)
     file_full_path = os.path.join(file_path, file_name + extension)
     cv2.imwrite(file_full_path, img, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+    return file_full_path
 
 
 def save_to_mp4(file, file_path, file_name):
@@ -44,3 +45,9 @@ def change_video_codec(file, file_path, file_name):
             .run(quiet=True)
         os.remove(temp_path)
         os.rename(os.path.join(file_path, 'temp.mp4'), temp_path)
+
+
+def get_image_info(image_path):
+    image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    h, w, _ = image.shape
+    return {'width': w, 'height': h}
