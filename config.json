@@ -4,16 +4,19 @@
       "level": "info",
       "path": "log"
     },
+    "use_gpu": true,
     "image": "image",
     "video": "video",
     "image_format": "['.jpg', '.jpeg', '.png']",
     "video_format": "['.mp4', '.avi', '.mkv', '.webm']",
     "output_basedir": "D:\\toy-output",
     "original_dir_name": "original",
-    "object_detection_dir_name": "object_detection",
-    "default_object_detection_model": "SsdMobilenetV2",
-    "use_gpu": true,
-    "target_entities" :  "['Person', 'Car']"
+    "object_detection": {
+      "dir_name": "object_detection",
+      "target_entities" :  "['Person', 'Car', 'Woman', 'Man']",
+      "return_cnt": 10,
+      "min_score": 0.2
+    }
   },
   "testing": {
     "logging": {
