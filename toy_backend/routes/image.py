@@ -44,9 +44,6 @@ class ImageAPI(object):
         # 원본 이미지 저장
         path = save_to_jpg(file, original_path, file_name)
 
-        # 객체 이미지 디렉토리 생성
-        obj_detection_path = os.path.join(config.output_basedir, config.image, config.object_detection_dir_name, today)
-        create_dir(obj_detection_path)
         return make_response({'path': path, 'info': get_image_info(path)}, 200)
 
 
