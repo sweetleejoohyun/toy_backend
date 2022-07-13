@@ -4,7 +4,13 @@
       "level": "info",
       "path": "log"
     },
-    "output_basedir": "D:\\toy-output\\",
+    "image": "image",
+    "video": "video",
+    "image_format": "['.jpg', '.jpeg', '.png']",
+    "video_format": "['.mp4', '.avi', '.mkv', '.webm']",
+    "output_basedir": "D:\\toy-output",
+    "original_dir_name": "original",
+    "object_detection_dir_name": "object_detection",
     "use_gpu": true,
     "target_entities" :  "['Person', 'Car']"
   },

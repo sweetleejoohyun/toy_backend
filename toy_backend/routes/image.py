@@ -1,13 +1,21 @@
-from flask import request
+import os
+from flask import request, make_response
 from datetime import date
-import random
 
-from toy_backend import logger
+
+from toy_backend import logger, config
 from toy_backend.routes.route import Route
+from toy_backend.common.util import (
+    create_dir,
+    assign_file_name,
+    save_to_jpg,
+    get_image_info
+)
 from toy_backend.common.exception import (
     UploadFileRequired,
     UploadFilenameRequired,
-    UploadImageFileRequired
+    UploadImageFileRequired,
+    FailedToUploadFile
 )
 
 
@@ -15,24 +23,33 @@ class ImageAPI(object):
     @staticmethod
     def upload_image():
         logger.debug(request)
-        if 'file' not in request.files:
+        if 'image' not in request.files:
             raise UploadFileRequired('File not given.')
-        file = request.files['file']
+        file = request.files['image']
         if not file.filename:
             raise UploadFilenameRequired('File name not given.')
-        if not file.filename.endswith(('.jpg', '.jpeg', '.png')):
+        if not file.filename.endswith(tuple(config.image_format)):
             raise UploadImageFileRequired('Check the image file format.')
 
         today = date.today().strftime('%Y%m%d')
-        file_name = random.random()
-        print(f'today : {today} / file_name : {file_name}')
+        original_dir = os.path.join(config.output_basedir, config.image, config.original_dir_name, today)
+        create_dir(original_dir)
+
+        _, extension = os.path.splitext(file.filename)
+        try:
+            original_path, file_name = assign_file_name(original_dir, extension)
+        except RecursionError:
+            raise FailedToUploadFile('Failed to assign file name.')
+
+        # 원본 이미지 저장
+        path = save_to_jpg(file, original_path, file_name)
+
+        # 객체 이미지 디렉토리 생성
+        obj_detection_path = os.path.join(config.output_basedir, config.image, config.object_detection_dir_name, today)
+        create_dir(obj_detection_path)
+        return make_response({'path': path, 'info': get_image_info(path)}, 200)
 
 
 routes = [
     Route(uri='image/upload', view_func=ImageAPI.upload_image, methods=['POST']),
-    # Route(uri='video/<video_id>', view_func=Api.get_video),
-    # Route(uri='video/<video_id>/description', view_func=Api.update_video_description, methods=['PATCH']),
-    # Route(uri='video/<video_id>/groups', view_func=Api.get_objs_grouped),
-    # Route(uri='videos', view_func=Api.get_videos),
-    # Route(uri='videos', view_func=Api.delete_videos, methods=['DELETE'])
 ]
