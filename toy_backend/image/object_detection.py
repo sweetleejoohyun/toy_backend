@@ -7,8 +7,9 @@ from threading import Thread
 
 from config import CustomObject
 from toy_backend import config, logger
-from toy_backend.common.util import create_dir, split_file_name, get_date_from_file_path
+from toy_backend.common.util import create_dir, split_file_name, get_date_from_file_path, is_file_exist
 from toy_backend.image.image_helper import crop_image, segment_image
+from toy_backend.json_metadata import DetectionJson
 
 
 class ObjectDetectResult(CustomObject):
@@ -40,9 +41,11 @@ class ObjectDetection(object):
 
     # run object detection
     def run_detector(self, image_path):
-        self.set_out_path(image_path)
+        if not is_file_exist(image_path):
+            return None, None
 
-        np_image = cv2.imread(image_path, cv2.IMREAD_COLOR )
+        self.set_out_path(image_path)
+        np_image = cv2.imread(image_path, cv2.IMREAD_COLOR)
         # change BGR to RGB
         np_image = np_image[:,:,::-1]
         # convert nd_array to tensor
@@ -60,18 +63,17 @@ class ObjectDetection(object):
 
         # result is sorted by score
         result = {key: value.numpy() for key, value in result.items()}
-
         logger.debug("Found %d objects." % len(result["detection_scores"]))
         logger.debug(f"detected time : {end_time - start_time:.5f} sec")
 
         np_image = np_image[:,:,::-1]
-        # crop_thread = Thread(target=self.crop_result, args=(np_image.copy(), result))
-        # crop_thread.start()
-
         segment_thread = Thread(target=self.segmentation_result, args=(np_image.copy(), result))
         segment_thread.start()
 
-        return self.crop_result(np_image=np_image, result=result)
+        final_result = self.crop_result(np_image=np_image, result=result)
+        json_path = os.path.join(self.output_dir, '0.json')
+        DetectionJson.save(out_path=json_path, metadata=final_result)
+        return json_path, final_result
 
     def crop_result(self, np_image, result,
                     return_cnt=config.object_detection.return_cnt,
