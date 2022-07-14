@@ -7,7 +7,7 @@ from threading import Thread
 
 from config import CustomObject
 from toy_backend import config, logger
-from toy_backend.common.util import create_dir, split_file_name, get_date_from_file_path, is_file_exist
+from toy_backend.common.util import create_dir, split_file_name, get_date_from_file_path, is_file_exist, round
 from toy_backend.image.image_helper import crop_image, segment_image
 from toy_backend.json_metadata import DetectionJson
 
@@ -85,12 +85,12 @@ class ObjectDetection(object):
 
         for i in range(min(entities.shape[0], return_cnt)):
             if entities[i].decode('utf-8') in self.target_entities and scores[i] >= min_score:
-                result = (boxes[i], entities[i].decode('utf-8'), scores[i])
+                result = (boxes[i], entities[i].decode('utf-8'), round(scores[i], 4))
                 # save crop helper
                 obj_path, coordinates = crop_image(np_image, result, self.output_dir)
                 final_result.append(ObjectDetectResult(obj_path=obj_path,
                                                        obj=entities[i].decode('utf-8'),
-                                                       score=scores[i].item(),
+                                                       score=round(scores[i], 4),
                                                        coordinates=coordinates).__dict__)
         if len(final_result) == 0:
             return None
@@ -107,7 +107,7 @@ class ObjectDetection(object):
 
         for i in range(min(entities.shape[0], return_cnt)):
             if entities[i].decode('utf-8') in self.target_entities and scores[i] >= min_score:
-                result = (boxes[i], entities[i].decode('utf-8'), scores[i])
+                result = (boxes[i], entities[i].decode('utf-8'), round(scores[i], 4))
                 np_image_new = segment_image(np_image, result)
 
         if np_image_new.size == 0:
