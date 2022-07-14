@@ -33,7 +33,7 @@ def send_image():
         return send_file(path_or_file=r'D:\React\toy-front\public\images\no_image.jpg', mimetype='image/jpeg')
 
 
-@app.route(f'{api_root}/image/object_detection/SsdMobilenetV2', methods=['POST'])
+@app.route(f'{api_root}/image/object-detection/ssdmobilenetv2', methods=['POST'])
 def object_detection_ssdmobilenet_v2():
     logger.debug(request)
     print(request.json)
