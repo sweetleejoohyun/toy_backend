@@ -36,8 +36,6 @@ def send_image():
 @app.route(f'{api_root}/image/object-detection/ssdmobilenetv2', methods=['POST'])
 def object_detection_ssdmobilenet_v2():
     logger.debug(request)
-    print(request.json)
-
     this_model_name = 'SsdMobilenetV2'
     if not model_manager.is_exists_model(this_model_name):
         model = SsdMobilenetV2()
@@ -45,10 +43,10 @@ def object_detection_ssdmobilenet_v2():
     else:
         model = model_manager.get_model(this_model_name)
 
-    final_result = model.run_detector(request.json['path'])
+    path, final_result = model.run_detector(request.json['path'])
     if final_result is None:
-        return {'result': [{}]}
-    return {'result': final_result}
+        return {'path': None, 'result': [{}]}
+    return {'path': path, 'result': final_result}
 
 
 if __name__ == '__main__':
