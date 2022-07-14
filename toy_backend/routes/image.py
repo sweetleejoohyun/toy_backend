@@ -8,6 +8,8 @@ from toy_backend.routes.route import Route
 from toy_backend.common.util import (
     create_dir,
     assign_file_name,
+)
+from toy_backend.image import (
     save_to_jpg,
     get_image_info
 )
