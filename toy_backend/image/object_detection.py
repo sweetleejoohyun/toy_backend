@@ -44,7 +44,6 @@ class ObjectDetection(object):
         if not is_file_exist(image_path):
             return None, None
 
-        self.set_out_path(image_path)
         np_image = cv2.imread(image_path, cv2.IMREAD_COLOR)
         # change BGR to RGB
         np_image = np_image[:,:,::-1]
@@ -66,6 +65,11 @@ class ObjectDetection(object):
         logger.debug("Found %d objects." % len(result["detection_scores"]))
         logger.debug(f"detected time : {end_time - start_time:.5f} sec")
 
+        if not result['detection_class_entities'][0].decode('utf-8') in self.target_entities and \
+                result['detection_scores'][0] < config.object_detection.min_score:
+            return None, None
+
+        self.set_out_path(image_path)
         np_image = np_image[:,:,::-1]
         segment_thread = Thread(target=self.segmentation_result, args=(np_image.copy(), result))
         segment_thread.start()
