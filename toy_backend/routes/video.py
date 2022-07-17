@@ -1,7 +1,6 @@
 import os
 from flask import request, make_response
 from datetime import date
-import random
 
 from toy_backend import logger, config
 from toy_backend.routes.route import Route
@@ -10,7 +9,8 @@ from toy_backend.common.util import (
     assign_file_name,
 )
 from toy_backend.video import (
-    save_to_mp4
+    save_to_mp4,
+    get_video_info
 )
 from toy_backend.common.exception import (
     UploadFileRequired,
@@ -43,12 +43,9 @@ class VideoAPI(object):
             raise FailedToUploadFile('Failed to assign file name.')
 
         # 원본 영상 저장
-        save_to_mp4(file, original_path, file_name)
+        path = save_to_mp4(file, original_path, file_name)
 
-        # 객체 이미지 디렉토리 생성
-        obj_detection_path = os.path.join(config.output_basedir, config.video, config.object_detection_dir_name, today)
-        create_dir(obj_detection_path)
-        return make_response({'message': 'Video is uploaded successfully'}, 200)
+        return make_response({'path': path, 'info': get_video_info(path)}, 200)
 
 
 routes = [
