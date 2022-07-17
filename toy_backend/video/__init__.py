@@ -3,7 +3,7 @@ import ffmpeg
 
 
 def save_to_mp4(file, file_path, file_name):
-    change_video_codec(file, file_path, file_name)
+    return change_video_codec(file, file_path, file_name)
 
 
 def change_video_codec(file, file_path, file_name):
@@ -17,3 +17,11 @@ def change_video_codec(file, file_path, file_name):
             .run(quiet=True)
         os.remove(temp_path)
         os.rename(os.path.join(file_path, 'temp.mp4'), temp_path)
+    return temp_path
+
+
+def get_video_info(video_path):
+    probe = ffmpeg.probe(video_path)
+    w = probe['streams'][0]['width']
+    h = probe['streams'][0]['height']
+    return {'width': w, 'height': h}
