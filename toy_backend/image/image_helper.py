@@ -21,7 +21,7 @@ def crop_image(np_image, result, base_dir, file_name='0'):
     return result_saved_img_url, new_coordinates
 
 
-def segment_image(np_image, result):
+def bound_box_image(np_image, result):
     coordinates, entity, score = tuple(result)
     ymin, xmin, ymax, xmax = tuple(coordinates)
     img_height, img_width, _ = np_image.shape

@@ -8,7 +8,7 @@ from threading import Thread
 from config import CustomObject
 from toy_backend import config, logger
 from toy_backend.common.util import create_dir, split_file_name, get_date_from_file_path, is_file_exist, round
-from toy_backend.image.image_helper import crop_image, segment_image
+from toy_backend.image.image_helper import crop_image, bound_box_image
 from toy_backend.json_metadata import DetectionJson
 
 
@@ -33,10 +33,10 @@ class ObjectDetection(object):
     def set_out_path(self, input_path):
         # 객체 이미지 디렉토리 생성
         date = get_date_from_file_path(input_path)
-        file_name, ext = split_file_name(input_path)
+        self.file_name, ext = split_file_name(input_path)
         model_name = self.__class__.__name__
         object_detection_path = os.path.join(config.output_basedir, config.image, config.object_detection.dir_name)
-        self.output_dir = os.path.join(object_detection_path, date, file_name, model_name)
+        self.output_dir = os.path.join(object_detection_path, date, self.file_name, model_name)
         create_dir(self.output_dir)
 
     # run object detection
@@ -71,11 +71,11 @@ class ObjectDetection(object):
 
         self.set_out_path(image_path)
         np_image = np_image[:,:,::-1]
-        segment_thread = Thread(target=self.segmentation_result, args=(np_image.copy(), result))
-        segment_thread.start()
+        bounding_box_thread = Thread(target=self.bounding_box_result, args=(np_image.copy(), result))
+        bounding_box_thread.start()
 
         final_result = self.crop_result(np_image=np_image, result=result)
-        json_path = os.path.join(self.output_dir, '0.json')
+        json_path = os.path.join(self.output_dir, f'{self.file_name}.json')
         DetectionJson.save(out_path=json_path, metadata=final_result)
         return json_path, final_result
 
@@ -101,7 +101,7 @@ class ObjectDetection(object):
         else:
             return final_result
 
-    def segmentation_result(self, np_image, result,
+    def bounding_box_result(self, np_image, result,
                             return_cnt=config.object_detection.return_cnt,
                             min_score=config.object_detection.min_score):
         np_image_new = np.empty(shape=(0, 0))
@@ -112,10 +112,10 @@ class ObjectDetection(object):
         for i in range(min(entities.shape[0], return_cnt)):
             if entities[i].decode('utf-8') in self.target_entities and scores[i] >= min_score:
                 result = (boxes[i], entities[i].decode('utf-8'), round(scores[i], 4))
-                np_image_new = segment_image(np_image, result)
+                np_image_new = bound_box_image(np_image, result)
 
         if np_image_new.size == 0:
             pass
         else:
-            seg_output_path = os.path.join(self.output_dir, 'segmentation.jpg')
+            seg_output_path = os.path.join(self.output_dir, 'bounding-box.jpg')
             cv2.imwrite(seg_output_path, np_image_new)
