@@ -5,8 +5,9 @@ import traceback
 from toy_backend import logger
 from routes import image, video
 from common.exception import CustomException
-from tf_hub import Model, SsdMobilenetV2
-
+from tf_hub import Models, SsdMobilenetV2
+from image.image_helper import to_ndarray
+from toy_backend.tf_hub.object_detection.image_handler import ImageHandler
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -15,7 +16,7 @@ routes = image.routes + video.routes
 [app.add_url_rule(rule=f'{api_root}/{r.uri}', view_func=r.view_func, methods=r.methods) for r in routes]
 
 # model manager
-model_manager = Model()
+model_manager = Models()
 
 
 @app.errorhandler(CustomException)
@@ -34,7 +35,7 @@ def send_image():
 
 
 @app.route(f'{api_root}/image/object-detection/ssdmobilenetv2', methods=['POST'])
-def object_detection_ssdmobilenet_v2():
+def image_object_detection_ssdmobilenet_v2():
     logger.debug(request)
     this_model_name = 'SsdMobilenetV2'
     if not model_manager.is_exists_model(this_model_name):
@@ -43,10 +44,35 @@ def object_detection_ssdmobilenet_v2():
     else:
         model = model_manager.get_model(this_model_name)
 
-    path, final_result = model.run_detector(request.json['path'])
+    # convert to ndarray
+    np_image = to_ndarray(request.json['path'])
+    # run detection
+    result = model.run_detector(np_image)
+    # handle result
+    handler = ImageHandler(this_model_name, request.json['path'])
+    json_path, final_result = handler.handle_detection(np_image, result)
+
     if final_result is None:
         return {'path': None, 'result': [{}]}
-    return {'path': path, 'result': final_result}
+    return {'path': json_path, 'result': final_result}
+
+
+@app.route(f'{api_root}/video/object-detection/ssdmobilenetv2', methods=['POST'])
+def video_object_detection_ssdmobilenet_v2():
+    logger.debug(request)
+    this_model_name = 'SsdMobilenetV2'
+    if not model_manager.is_exists_model(this_model_name):
+        model = SsdMobilenetV2()
+        model_manager.register_model(model)
+    else:
+        model = model_manager.get_model(this_model_name)
+
+    # path, final_result = model.run_detector(request.json['path'])
+    # if final_result is None:
+    #     return {'path': None, 'result': [{}]}
+    # return {'path': path, 'result': final_result}
+
+    return {'path': None, 'result': [{}]}
 
 
 if __name__ == '__main__':
