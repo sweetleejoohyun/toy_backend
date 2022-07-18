@@ -15,33 +15,37 @@ class ImageHandler(object):
         self.model_name = model_name
         self.image_path = image_path
         self.target_entities = config.object_detection.target_entities
+        self.file_name = None
+        self.output_dir = None
+        self.json_path = None
 
     def set_out_path(self, image_path):
         # 객체 이미지 디렉토리 생성
         date = get_date_from_file_path(image_path)
-        self.file_name, ext = split_file_name(image_path)
+        self.file_name, _ = split_file_name(image_path)
         object_detection_path = os.path.join(config.output_basedir, config.image, config.object_detection.dir_name)
         self.output_dir = os.path.join(object_detection_path, date, self.file_name, self.model_name)
         create_dir(self.output_dir)
+        self.json_path = os.path.join(self.output_dir, f'{self.file_name}.json')
 
     def handle_detection(self, np_image: np.ndarray, result: dict):
         if not result['detection_class_entities'][0].decode('utf-8') in self.target_entities and \
                 result['detection_scores'][0] < config.object_detection.min_score:
-            return None, None
+            return None
 
         self.set_out_path(self.image_path)
         bounding_box_thread = Thread(target=self.bounding_box_result, args=(np_image.copy(), result))
         bounding_box_thread.start()
 
-        final_result = self.crop_result(np_image=np_image, result=result)
-        json_path = os.path.join(self.output_dir, f'{self.file_name}.json')
-        DetectionJson.save(out_path=json_path, metadata=final_result)
-        return json_path, final_result
+        return_result = self.crop_result(np_image=np_image, result=result)
+        final_result = {'0': return_result}
+        DetectionJson.save(out_path=self.json_path, metadata=final_result)
+        return final_result
 
     def crop_result(self, np_image, result,
                     return_cnt=config.object_detection.return_cnt,
                     min_score=config.object_detection.min_score):
-        final_result = []
+        return_result = []
         boxes = result['detection_boxes']
         entities = result['detection_class_entities']
         scores = result['detection_scores']
@@ -51,14 +55,14 @@ class ImageHandler(object):
                 result = (boxes[i], entities[i].decode('utf-8'), round(scores[i], 4))
                 # save crop helper
                 obj_path, coordinates = crop_image(np_image, result, self.output_dir)
-                final_result.append(ObjectDetectResult(obj_path=obj_path,
-                                                       obj=entities[i].decode('utf-8'),
-                                                       score=round(scores[i], 4),
-                                                       coordinates=coordinates).__dict__)
-        if len(final_result) == 0:
+                return_result.append(ObjectDetectResult(obj_path=obj_path,
+                                                        obj=entities[i].decode('utf-8'),
+                                                        score=round(scores[i], 4),
+                                                        coordinates=coordinates).__dict__)
+        if len(return_result) == 0:
             return None
         else:
-            return final_result
+            return return_result
 
     def bounding_box_result(self, np_image, result,
                             return_cnt=config.object_detection.return_cnt,
