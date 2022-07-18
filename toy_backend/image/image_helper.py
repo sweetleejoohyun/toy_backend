@@ -1,6 +1,9 @@
 import os
 import cv2
 
+from toy_backend.common.util import is_file_exist
+
+
 TEXT_FONT = cv2.FONT_HERSHEY_SIMPLEX
 FONT_SIZE = 0.5
 
@@ -29,3 +32,11 @@ def bound_box_image(np_image, result):
                         (int(xmax*img_width), int(ymax*img_height)), (255, 0, 0), 1)
     cv2.putText(src, entity, (int(xmin*img_width), int(ymin*img_height)), TEXT_FONT, FONT_SIZE, (255, 0, 0))
     return src
+
+
+def to_ndarray(image_path: str):
+    if not is_file_exist(image_path):
+        return None
+
+    np_image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    return np_image
