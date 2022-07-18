@@ -3,11 +3,13 @@ from flask_cors import CORS
 import traceback
 
 from toy_backend import logger
-from routes import image, video
-from common.exception import CustomException
-from tf_hub import Models, SsdMobilenetV2
-from image.image_helper import to_ndarray
+from toy_backend.json_metadata import DetectionJson
+from toy_backend.routes import image, video
+from toy_backend.common.exception import CustomException
+from toy_backend.tf_hub import Models, SsdMobilenetV2
+from toy_backend.image.image_helper import to_ndarray
 from toy_backend.tf_hub.object_detection.image_handler import ImageHandler
+from toy_backend.tf_hub.object_detection.video_handler import VideoHandler
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -38,6 +40,7 @@ def send_image():
 def image_object_detection_ssdmobilenet_v2():
     logger.debug(request)
     this_model_name = 'SsdMobilenetV2'
+    handler = ImageHandler(this_model_name, request.json['path'])
     if not model_manager.is_exists_model(this_model_name):
         model = SsdMobilenetV2()
         model_manager.register_model(model)
@@ -49,30 +52,43 @@ def image_object_detection_ssdmobilenet_v2():
     # run detection
     result = model.run_detector(np_image)
     # handle result
-    handler = ImageHandler(this_model_name, request.json['path'])
-    json_path, final_result = handler.handle_detection(np_image, result)
+    final_result = handler.handle_detection(np_image, result)
 
     if final_result is None:
         return {'path': None, 'result': [{}]}
-    return {'path': json_path, 'result': final_result}
+
+    print({'path': handler.json_path, 'result': final_result})
+    return {'path': handler.json_path, 'result': final_result}
 
 
+import cv2
 @app.route(f'{api_root}/video/object-detection/ssdmobilenetv2', methods=['POST'])
 def video_object_detection_ssdmobilenet_v2():
     logger.debug(request)
     this_model_name = 'SsdMobilenetV2'
+    handler = VideoHandler(this_model_name, request.json['path'])
     if not model_manager.is_exists_model(this_model_name):
         model = SsdMobilenetV2()
         model_manager.register_model(model)
     else:
         model = model_manager.get_model(this_model_name)
 
-    # path, final_result = model.run_detector(request.json['path'])
-    # if final_result is None:
-    #     return {'path': None, 'result': [{}]}
-    # return {'path': path, 'result': final_result}
+    v_cap = cv2.VideoCapture(filename=request.json['path'], apiPreference=cv2.CAP_FFMPEG)
+    frame_cnt = 0
+    final_result = {}
+    while v_cap.isOpened() and frame_cnt < 20:
+        ret, frame = v_cap.read()
+        if ret:
+            result = model.run_detector(frame)
+            handler.video_handler_init()
+            return_result = handler.handle_detection(frame_cnt, frame, result)
+            if return_result is not None:
+                final_result[frame_cnt] = return_result
+            frame_cnt += 1
 
-    return {'path': None, 'result': [{}]}
+    print(final_result)
+    DetectionJson.save(out_path=handler.json_path, metadata=final_result)
+    return {'path': handler.json_path, 'result': [{}]}
 
 
 if __name__ == '__main__':
