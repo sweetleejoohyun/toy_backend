@@ -20,17 +20,18 @@ class VideoHandler(object):
         self.output_dir = None
         self.json_path = None
         self.video_out = None
+        self.video_info = None
 
     def open_video(self, input_path):
         v_info = video_info(input_path)
-        v_info = CustomObject(v_info)
+        self.video_info = CustomObject(v_info)
         if v_info is not None:
             file_name, _ = split_file_name(input_path)
             output = os.path.join(self.output_dir, 'bounding-box.mp4')
             v_out = cv2.VideoWriter(filename=output,
                                     fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
-                                    fps=v_info.fps,
-                                    frameSize=(v_info.frame_width, v_info.frame_height))
+                                    fps=self.video_info.fps,
+                                    frameSize=(self.video_info.frame_width, self.video_info.frame_height))
             return v_out
 
     def set_out_path(self, video_path):
