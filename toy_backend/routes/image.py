@@ -4,6 +4,8 @@ from datetime import date
 
 
 from toy_backend import logger, config
+from toy_backend.image.image_helper import to_ndarray
+from toy_backend.json_metadata import DetectionJson
 from toy_backend.routes.route import Route
 from toy_backend.common.util import (
     create_dir,
@@ -19,6 +21,7 @@ from toy_backend.common.exception import (
     UploadImageFileRequired,
     FailedToUploadFile
 )
+from toy_backend.tf_hub.object_detection.image_handler import ImageHandler
 
 
 class ImageAPI(object):
@@ -47,6 +50,23 @@ class ImageAPI(object):
         path = save_to_jpg(file, original_path, file_name)
 
         return make_response({'path': path, 'info': get_image_info(path)}, 200)
+
+    @staticmethod
+    def run_object_detection(model, input_path):
+        handler = ImageHandler(model.__class__.__name__, input_path)
+
+        # convert to ndarray
+        np_image = to_ndarray(input_path)
+        # run detection
+        result = model.run_detector(np_image)
+        # handle result
+        final_result = handler.handle_detection(np_image, result)
+
+        if final_result:
+            DetectionJson.save(out_path=handler.json_path, metadata=final_result)
+            return handler.json_path, final_result
+        else:
+            return None, None
 
 
 routes = [
