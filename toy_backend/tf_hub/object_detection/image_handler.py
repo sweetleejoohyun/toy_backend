@@ -38,9 +38,12 @@ class ImageHandler(object):
         bounding_box_thread.start()
 
         return_result = self.crop_result(np_image=np_image, result=result)
-        final_result = {'0': return_result}
-        DetectionJson.save(out_path=self.json_path, metadata=final_result)
-        return final_result
+        if return_result is None:
+            return None
+        else:
+            final_result = {'0': return_result}
+            # DetectionJson.save(out_path=self.json_path, metadata=final_result)
+            return final_result
 
     def crop_result(self, np_image, result,
                     return_cnt=config.object_detection.return_cnt,
@@ -59,10 +62,11 @@ class ImageHandler(object):
                                                         obj=entities[i].decode('utf-8'),
                                                         score=round(scores[i], 4),
                                                         coordinates=coordinates).__dict__)
-        if len(return_result) == 0:
-            return None
-        else:
+        if return_result:
             return return_result
+        else:
+            return None
+
 
     def bounding_box_result(self, np_image, result,
                             return_cnt=config.object_detection.return_cnt,
