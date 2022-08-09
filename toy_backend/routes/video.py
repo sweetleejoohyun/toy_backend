@@ -59,7 +59,6 @@ class VideoAPI(object):
         frame_cnt = 0
         final_result = {}
         while v_cap.isOpened():
-            print(frame_cnt)
             ret, frame = v_cap.read()
             if ret:
                 result = model.run_detector(frame)

@@ -90,8 +90,6 @@ def image_object_detection_ssdmobilenet_v2():
     json_path, final_result = image.ImageAPI.run_object_detection(model, request.json['path'])
     if final_result is None:
         return {'path': None, 'result': [{}]}
-
-    print({'path': json_path, 'result': final_result})
     return {'path': json_path, 'result': final_result}
 
 
@@ -109,10 +107,8 @@ def video_object_detection_ssdmobilenet_v2():
     json_path, final_result, fps = video.VideoAPI.run_object_detection(model, request.json['path'])
     if final_result is None:
         return {'path': None, 'result': [{}]}
-
-    print({'path': json_path, 'result': final_result, 'fps': fps})
     return {'path': json_path, 'result': final_result, 'fps': fps}
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
