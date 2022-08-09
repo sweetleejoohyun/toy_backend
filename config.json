@@ -13,7 +13,7 @@
     "original_dir_name": "original",
     "object_detection": {
       "dir_name": "object_detection",
-      "target_entities" :  "['Person', 'Car', 'Woman', 'Man']",
+      "target_entities" :  "['Car', 'Woman', 'Man']",
       "return_cnt": 10,
       "min_score": 0.2
     }
