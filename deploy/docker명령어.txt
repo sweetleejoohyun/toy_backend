@@ -1,0 +1,38 @@
+public ip : 129.154.56.223
+
+docker build --tag backend-image -f Dockerfile_backend .
+
+docker build --tag frontend-image -f Dockerfile_frontend .
+
+docker-compose up -d
+
+
+
+
+
+docker run -p 5000:5000  -v /home/ubuntu/data/toy-project/toy-backend/log:/usr/src/app/toy_backend/log --name toy-backend backend-image
+docker run -p 3000:3000 --name toy-frontend frontend-image
+
+
+sudo iptables -I INPUT 5 -i ens3 -p tcp -m tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT​
+sudo iptables -I INPUT 5 -i ens3 -p tcp --dport 5000 -m state --state NEW,ESTABLISHED -j ACCEPT​
+sudo iptables -I INPUT 5 -i ens3 -p tcp --dport 3000 -m state --state NEW,ESTABLISHED -j ACCEPT​
+
+sudo iptables -A INPUT -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 5000 -m state --state NEW,ESTABLISHED -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 3000 -m state --state NEW,ESTABLISHED -j ACCEPT
+
+$        iptables -t nat -p tcp -I PREROUTING --src 0/0 --dst 127.0.0.1 --dport 80 -j REDIRECT --to-ports 8080
+$ sudo iptables -t nat -p tcp -I PREROUTING --src 0/0 --dst 127.0.0.1 --dport 80 -j REDIRECT --to-ports 8080
+# OK
+
+
+
+
+sudo iptables -I INPUT 5 -i ens3 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+
+
+
+
+
+

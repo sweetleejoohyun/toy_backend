@@ -1,0 +1,27 @@
+FROM tensorflow/tensorflow:2.7.0
+
+WORKDIR /usr/src/app
+
+COPY ./toy-backend .
+
+RUN apt-get update -y && \
+    apt-get install libglib2.0-0 -y && \
+    apt install python3.8 python3.8-dev -y && \
+    apt-get install libgl1-mesa-glx -y && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm /usr/local/bin/python && \
+    ln -s /usr/bin/python3.8 /usr/local/bin/python && \
+    python3.8 -m pip install --no-cache-dir -U pip && \
+    pip install --upgrade setuptools six && \
+    pip install wheel cmake && \
+    pip install -r requirements.txt
+
+ENV PYTHONPATH="${PYTHONPATH}:/"
+ENV HOME=.
+ENV ENV=test
+ENV FLASK_ENV=deployment
+
+EXPOSE 5000
+
+CMD ["python", "toy_backend/app.py"]

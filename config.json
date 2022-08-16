@@ -23,6 +23,6 @@
       "level": "debug"
     },
     "use_gpu": false,
-    "output_basedir": "D:\\toy-output",
+    "output_basedir": "D:\\toy-output"
   }
 }
