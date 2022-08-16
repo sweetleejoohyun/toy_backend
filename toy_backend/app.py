@@ -26,13 +26,18 @@ def handle_error(e):
     return jsonify(e.to_dict(), e.status_code)
 
 
+@app.route(f'{api_root}/test')
+def test():
+    return jsonify('successful test!')
+
+
 @app.route(f'{api_root}/image')
 def send_image():
     logger.debug(request)
     try:
         return send_file(path_or_file=request.args.get('image_path'), mimetype='image/jpeg')
     except FileNotFoundError:
-        return send_file(path_or_file=r'D:\React\toy-front\public\images\no_image.jpg', mimetype='image/jpeg')
+        return send_file(path_or_file=r'./public/images/no_image.jpg', mimetype='image/jpeg')
 
 
 @app.route(f'{api_root}/video')

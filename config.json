@@ -4,12 +4,12 @@
       "level": "info",
       "path": "log"
     },
-    "use_gpu": true,
+    "use_gpu": false,
     "image": "image",
     "video": "video",
     "image_format": "['.jpg', '.jpeg', '.png']",
     "video_format": "['.mp4', '.avi', '.mkv', '.webm']",
-    "output_basedir": "D:\\toy-output",
+    "output_basedir": "./toy-output",
     "original_dir_name": "original",
     "object_detection": {
       "dir_name": "object_detection",
@@ -22,6 +22,7 @@
     "logging": {
       "level": "debug"
     },
-    "use_gpu": false
+    "use_gpu": false,
+    "output_basedir": "D:\\toy-output",
   }
 }

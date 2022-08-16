@@ -1,0 +1,23 @@
+version: "3"
+services:
+  toy-backend:
+    image: backend-image
+    container_name: toy-backend
+    restart: always
+    volumes:
+      - /home/ubuntu/data/toy-project/toy-backend/log:/usr/src/app/toy_backend/log
+    ports:
+      - "5000:5000"
+    environment:
+      TZ: "Asia/Seoul"
+
+  toy-frontend:
+    image: frontend-image
+    container_name: toy-frontend
+    depends_on:
+      - toy-backend
+    restart: always
+    volumes:
+      - ./:/frontend
+    ports:
+      - "3000:3000"
